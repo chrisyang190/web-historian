@@ -20,3 +20,24 @@ exports.serveAssets = function(res, asset, callback) {
 
 
 // As you progress, keep thinking about what helper functions you can put here!
+exports.createResponse = function(path, file, res) {
+  fs.readFile(path + '/' + file, function(error, content) {
+    console.log('file: ', file);
+    console.log(archive.isUrlArchived(file, function(bool) { return bool; }));
+    if (error) {
+      console.log(error);
+      res.writeHead(404);
+      res.end();
+    } else if (archive.isUrlArchived(file, function() {})) {
+      res.writeHead(200, {'Content-type': 'text/html'});
+      res.end(content, 'utf-8');
+    } else if (!archive.isUrlArchived(file, function() {}) && file !== 'index.html') {
+      archive.addUrlToList(file, function() {} );
+      res.writeHead(302, {'Content-type': 'text/html'});
+      res.end(content, 'utf-8');
+    } else {
+      res.writeHead(200, {'Content-type': 'text/html'});
+      res.end(content, 'utf-8');
+    }
+  });
+};
