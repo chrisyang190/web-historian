@@ -57,7 +57,7 @@ exports.addUrlToList = function(url, callback) {
     if (error) {
       console.log(error);
     } else {
-      callback();
+      callback(url);
     }
   });
 };
@@ -73,7 +73,7 @@ exports.isUrlArchived = function(url, callback) {
           exists = true;
         }
       });
-      callback(exists);
+      return callback(exists);
     }
   });
 };
