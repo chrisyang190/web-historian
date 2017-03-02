@@ -26,16 +26,67 @@ exports.initialize = function(pathsObj) {
 // modularize your code. Keep it clean!
 
 exports.readListOfUrls = function(callback) {
+  fs.readFile(this.paths.list, 'utf8', function(error, content) {
+    if (error) {
+      console.log(error);
+    } else {
+      callback(content.split('\n'));
+    }
+  });
 };
 
 exports.isUrlInList = function(url, callback) {
+  fs.readFile(this.paths.list, 'utf8', function(error, content) {
+    if (error) {
+      console.log(error);
+    } else {
+      var urls = content.split('\n');
+      var exists = false;
+      urls.forEach(function(item) {
+        if (item === url) {
+          exists = true;
+        }
+      });
+      callback(exists);
+    }
+  });
 };
 
 exports.addUrlToList = function(url, callback) {
+  fs.writeFile(this.paths.list, url, function(error, content) {
+    if (error) {
+      console.log(error);
+    } else {
+      callback();
+    }
+  });
 };
 
 exports.isUrlArchived = function(url, callback) {
+  fs.readdir(this.paths.archivedSites, function(error, content) {
+    if (error) {
+      console.log(error);
+    } else {
+      var exists = false;
+      content.forEach(function(item) {
+        if (item === url) {
+          exists = true;
+        }
+      });
+      callback(exists);
+    }
+  });
 };
 
 exports.downloadUrls = function(urls) {
+  var context = this;
+  urls.forEach(function(url) {
+    fs.writeFile(context.paths.archivedSites + '/' + url, url, function(error, content) {
+      if (error) {
+        console.log(error);
+      } else {
+        context.addUrlToList(url, function() {});
+      }
+    });
+  });
 };
