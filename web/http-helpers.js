@@ -21,75 +21,64 @@ exports.serveAssets = function(res, asset, callback) {
 
 // As you progress, keep thinking about what helper functions you can put here!
 exports.createGetResponse = function(path, file, res) {
-  fs.readFile(path + '/' + file, function(error, content) {
-    if (error) {
-      console.log('error');
-      res.writeHead(404);
-      res.end();
-    } else {
-      archive.isUrlArchived(file, function(exists) {
-        if (exists) {
-          // console.log('The 200 if block causing this');
+  if (file === 'index.html') {
+    fs.readFile(path + '/' + file, function(error, content) {
+      res.writeHead(200, {'Content-type': 'text/html'});
+      res.end(content, 'utf-8');
+    });
+  } else {
+    archive.isUrlArchived(file, function(exists) {
+      if (exists) {
+        fs.readFile(path + '/' + file, function(error, content) {
           res.writeHead(200, {'Content-type': 'text/html'});
           res.end(content, 'utf-8');
-        } else {
-          if (file === 'index.html') {
-            // console.log('post????');
-            res.writeHead(200, {'Content-type': 'text/html'});
-            res.end(content, 'utf-8');
-          } 
-          // else if (method === 'POST') {
-          //   archive.addUrlToList(file, function(url) { console.log(url); } );
-          //   console.log('file in 302', file);
-          //   res.writeHead(302, {'Content-type': 'text/html'});
-          //   res.end(content, 'utf-8');
-          // }
-        }
-
-
-        // else if (file === 'index.html') {
-        //   console.log('post????');
-        //   res.writeHead(200, {'Content-type': 'text/html'});
-        //   res.end(content, 'utf-8');
-        // } else {
-        //   console.log('in 302');
-        //   archive.addUrlToList(file, function(url) { console.log(url); } );
-        //   res.writeHead(302, {'Content-type': 'text/html'});
-        //   res.end(content, 'utf-8');
-        // }
-      });
-    }
-  });
+        });
+      } else {
+        archive.isUrlInList(file, function(inList) {
+          if (inList) {
+            // file = 'loading.html';
+            console.log('in loading');
+            fs.readFile(archive.paths.siteAssets + '/loading.html', function(error, content) {
+              res.writeHead(200, {'Content-type': 'text/html'});
+              res.end(content, 'utf-8');
+            });
+          } else {
+            res.writeHead(404);
+            res.end();
+          }
+        });
+      }
+    });
+  }
 };
 
 exports.createPostResponse = function(path, file, req, res) {
-  // console.log('p1', path);
-  // fs.readFile(path, function(error, content) {
-  //   if (error) {
-  //     console.log(error);
-  //   } else {
-      // console.log('file!!', file);
   var string = '';
   req.on('data', function(data) {
     string += data;
+    console.log('string before slice:', string);
     string = string.slice(4) + '\n';
   }).on('end', function() {
     archive.isUrlInList(string, function(exists) {
       console.log('string:', string);
       if (!exists) {
         archive.addUrlToList(string, function(url) { console.log(url); } );
-        // console.log('file in 302', file);
-        res.writeHead(302, {'Content-type': 'text/html'});
-        res.end('content', 'utf-8');
+        fs.readFile(archive.paths.siteAssets + '/loading.html', function(error, content) {
+          res.writeHead(302, {'Content-type': 'text/html'});
+          res.end(content, 'utf-8');
+        });
       } else {
-        res.writeHead(302, {'Content-type': 'text/html'});
-        res.end('content', 'utf-8');
+        fs.readFile(path + '/' + file, function(error, content) {
+          res.writeHead(302, {'Content-type': 'text/html'});
+          res.end(content, 'utf-8');
+        });
       }
+
+
+      // res.writeHead(302, {'Content-type': 'text/html'});
+      // res.end(file, 'utf-8');
     });
   });
-  //   }
-  // });
-
 };
 
 
