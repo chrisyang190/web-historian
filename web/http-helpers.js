@@ -18,20 +18,22 @@ exports.serveAssets = function(res, asset, callback) {
 };
 
 
+var createResponse = function(statusCode, res, content) {
+  res.writeHead(statusCode, {'Content-type': 'text/html'});
+  res.end(content, 'utf-8');
+};
 
 // As you progress, keep thinking about what helper functions you can put here!
 exports.createGetResponse = function(path, file, res) {
   if (file === 'index.html') {
     fs.readFile(path + '/' + file, function(error, content) {
-      res.writeHead(200, {'Content-type': 'text/html'});
-      res.end(content, 'utf-8');
+      createResponse(200, res, content);
     });
   } else {
     archive.isUrlArchived(file, function(exists) {
       if (exists) {
         fs.readFile(path + '/' + file, function(error, content) {
-          res.writeHead(200, {'Content-type': 'text/html'});
-          res.end(content, 'utf-8');
+          createResponse(200, res, content);
         });
       } else {
         archive.isUrlInList(file, function(inList) {
@@ -39,8 +41,7 @@ exports.createGetResponse = function(path, file, res) {
             // file = 'loading.html';
             console.log('in loading');
             fs.readFile(archive.paths.siteAssets + '/loading.html', function(error, content) {
-              res.writeHead(200, {'Content-type': 'text/html'});
-              res.end(content, 'utf-8');
+              createResponse(200, res, content);
             });
           } else {
             res.writeHead(404);
@@ -64,13 +65,11 @@ exports.createPostResponse = function(path, file, req, res) {
       if (!exists) {
         archive.addUrlToList(string, function(url) { console.log(url); } );
         fs.readFile(archive.paths.siteAssets + '/loading.html', function(error, content) {
-          res.writeHead(302, {'Content-type': 'text/html'});
-          res.end(content, 'utf-8');
+          createResponse(302, res, content);
         });
       } else {
         fs.readFile(path + '/' + file, function(error, content) {
-          res.writeHead(302, {'Content-type': 'text/html'});
-          res.end(content, 'utf-8');
+          createResponse(302, res, content);
         });
       }
 
@@ -80,6 +79,5 @@ exports.createPostResponse = function(path, file, req, res) {
     });
   });
 };
-
 
 
